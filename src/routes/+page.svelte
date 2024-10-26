@@ -1,5 +1,5 @@
 <script>
-	import Button from '$lib/components/ui/button/button.svelte';
+	import Button from '$shadcn/button/button.svelte';
 </script>
 
 <h1>Welcome to your library project</h1>
