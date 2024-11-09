@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Navigation } from '@configpanel/panel';
+	import { Navigation } from '$lib/index.js';
 	let { children } = $props();
 </script>
 

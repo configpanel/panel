@@ -63,6 +63,7 @@
 		"vite": "^5.0.11"
 	},
 	"dependencies": {
+		"@tailwindcss/typography": "^0.5.15",
 		"mode-watcher": "^0.4.1"
 	}
 }
