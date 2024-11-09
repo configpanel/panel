@@ -1,58 +1,35 @@
-# create-svelte
+<h1 align="center">ConfigPanel</h1>
+<p align="center">Simple and extendable configuration panel for SvelteKit</p>
 
-Everything you need to build a Svelte library, powered by [`create-svelte`](https://github.com/sveltejs/kit/tree/main/packages/create-svelte).
+## Installation
 
-Read more about creating a library [in the docs](https://svelte.dev/docs/kit/packaging).
-
-## Creating a project
-
-If you're seeing this, you've probably already done this step. Congrats!
+Set up a SvelteKit project and install the ConfigPanel package along with the TailwindCSS configuration.
 
 ```bash
-# create a new project in the current directory
-npx sv create
-
-# create a new project in my-app
-npx sv create my-app
+npm i -D @configpanel/panel @configpanel/tailwind-config
 ```
 
-## Developing
+### Tailwind setup
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+ConfigPanel uses TailwindCSS for styling. To make everything work as intended, re-export the Tailwind configuration in your `tailwind.config.ts` file:
 
-```bash
-npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
+```ts
+export { default } from '@configpanel/tailwind-config';
 ```
 
-Everything inside `src/lib` is part of your library, everything inside `src/routes` can be used as a showcase or preview app.
+### Panel setup
 
-## Building
+To set up the ConfigPanel, import the `Navigation` component in your `src/routes/+layout.svelte` file:
 
-To build your library:
+```svelte
+<script lang="ts">
+	import { Navigation } from '@configpanel/panel';
+	let { children } = $props();
+</script>
 
-```bash
-npm run package
+<Navigation nav={[]} />
+
+{@render children}
 ```
 
-To create a production version of your showcase app:
-
-```bash
-npm run build
-```
-
-You can preview the production build with `npm run preview`.
-
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
-
-## Publishing
-
-Go into the `package.json` and give your package the desired name through the `"name"` option. Also consider adding a `"license"` field and point it to a `LICENSE` file which you can create from a template (one popular option is the [MIT license](https://opensource.org/license/mit/)).
-
-To publish your library to [npm](https://www.npmjs.com):
-
-```bash
-npm publish
-```
+That's it! You can now start adding your configuration pages.
