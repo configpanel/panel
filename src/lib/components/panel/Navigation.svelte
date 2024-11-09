@@ -1,4 +1,5 @@
 <script lang="ts">
+	import '$lib/style.css';
 	import Icon from '$c/Icon.svelte';
   import { ModeWatcher } from 'mode-watcher';
 	import type { NavGroup } from '$lib/types.js';
@@ -8,6 +9,7 @@
 	export let nav: NavGroup[];
 	export let logo: string = '/favicon.png';
 	export let title: string = 'ConfigPanel';
+	export let baseUrl: string = '/';
 </script>
 
 <ModeWatcher />
@@ -15,10 +17,10 @@
 <nav
 	class="fixed flex h-12 w-full items-center gap-2 border-white bg-slate-950 p-2 font-sans text-xl font-medium text-white dark:border-b dark:bg-transparent dark:backdrop-blur-lg"
 >
-	<header class="flex h-full grow items-center gap-2">
+	<a class="flex h-full grow items-center gap-2" href={baseUrl}>
 		<img class="h-full" src={logo} alt={title} />
 		<h1>{title}</h1>
-	</header>
+	</a>
 	<Sheet.Root>
 		<Sheet.Trigger><Menu class="mr-1" /></Sheet.Trigger>
 		<Sheet.Content class="overflow-y-auto">
@@ -34,7 +36,7 @@
 					<li class={(i !== nav.length - 1 ? 'mb-2 border-b pb-4' : '') + ''}>
 						{#if items.length === 1}
 							<header class="mt-4 w-full">
-								<a href={items[0].url} class="flex w-full items-center gap-2 hover:underline transition">
+								<a href={baseUrl + items[0].url} class="flex w-full items-center gap-2 hover:underline transition">
 									{#if icon}
 										<span class="scale-75"><Icon {icon} /></span>
 									{:else}
@@ -53,7 +55,7 @@
 							<ul>
 								{#each items as { title, url, icon }, j}
 									<li>
-										<a href={url} class="flex h-full w-full items-center gap-2 hover:underline transition">
+										<a href={baseUrl + url} class="flex h-full w-full items-center gap-2 hover:underline transition">
 											{#if icon}
 												<span class="scale-75"><Icon {icon} /></span>
 											{:else}
