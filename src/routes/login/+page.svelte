@@ -58,8 +58,8 @@
 		const apiUrl = parsedUrl.toString();
 		const request = fetch(apiUrl);
 		toast.promise(request, {
-			loading: 'Checking domain...',
-			error: 'Server unreachable',
+			loading: 'Connecting to host...',
+			error: 'Host unreachable',
 			description: `(${parsedUrl.host})`
 		});
 
@@ -78,7 +78,7 @@
 		try {
 			json = await response.json();
 		} catch {
-			toast.error('Invalid response from server');
+			toast.error('Invalid response from host');
 
 			domainFormInput.disabled = false;
 			domainFormSubmit.disabled = false;
@@ -86,7 +86,7 @@
 		}
 
 		if (!json?.configpanel || json?.configpanel !== 1) {
-			toast.error('Invalid response from server');
+			toast.error('Invalid response from host');
 
 			domainFormInput.disabled = false;
 			domainFormSubmit.disabled = false;
@@ -132,7 +132,7 @@
 		try {
 			json = await response.json();
 		} catch {
-			toast.error('Invalid response from server');
+			toast.error('Invalid response from host');
 			loginFormSubmit.disabled = false;
 			return;
 		}
@@ -203,7 +203,7 @@
 			<Label for="url-{id}">Domain or URL</Label>
 			<div class="flex w-full items-center space-x-2">
 				<Input type="text" id="url-{id}" placeholder="demo.configpanel.org" required />
-				<Button type="submit" id="submit-domain-{id}">Check</Button>
+				<Button type="submit" id="submit-domain-{id}">Connect</Button>
 			</div>
 		</form>
 
@@ -214,7 +214,7 @@
 				<Alert.Root variant="destructive">
 					<LockOpen />
 					<Alert.Title>Security Warning</Alert.Title>
-					<Alert.Description>This server did not provide any login fields.</Alert.Description>
+					<Alert.Description>This host did not provide any login fields.</Alert.Description>
 				</Alert.Root>
 			{/if}
 			<Button type="submit" id="submit-login-{id}">Login</Button>
