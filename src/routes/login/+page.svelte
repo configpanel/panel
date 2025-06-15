@@ -1,19 +1,29 @@
 <script lang="ts">
 	import { pushState } from '$app/navigation';
+	import * as Alert from '$ui/alert';
 	import { Button } from '$ui/button';
 	import { Input } from '$ui/input';
 	import { Label } from '$ui/label';
 	import { toast } from 'svelte-sonner';
 	import { onMount } from 'svelte';
-	import type { InitialConfig } from '$lib/types';
+	import type { LoginConfig, LoginField, LoginResponse } from '$lib/types';
+	import { LockOpen } from 'lucide-svelte';
 
 	const id = $props.id();
 
+	let fields: LoginField[] = [];
+
+	let config: LoginConfig;
+	let parsedUrl: URL;
+
 	let iconHeader: HTMLImageElement;
 	let nameHeader: HTMLHeadingElement;
+	let hostHeader: HTMLHeadingElement;
 	let domainForm: HTMLFormElement;
 	let domainFormInput: HTMLInputElement;
 	let domainFormSubmit: HTMLButtonElement;
+	let loginForm: HTMLFormElement;
+	let loginFormSubmit: HTMLButtonElement;
 
 	function fullUrl(url: string) {
 		if (!url.includes('/')) {
@@ -35,7 +45,6 @@
 		domainFormInput.disabled = true;
 		domainFormSubmit.disabled = true;
 
-		let parsedUrl: URL;
 		try {
 			parsedUrl = fullUrl(url);
 		} catch {
@@ -65,7 +74,7 @@
 			return;
 		}
 
-		let json: InitialConfig;
+		let json: LoginConfig;
 		try {
 			json = await response.json();
 		} catch {
@@ -84,19 +93,75 @@
 			return;
 		}
 
-		toast.success('Valid endpoint found');
 		nameHeader.textContent = document.title = 'Log in to ' + (json.name || parsedUrl.hostname);
+		hostHeader.textContent = parsedUrl.host;
 		if (json.icon) iconHeader.src = new URL(json.icon, parsedUrl).toString();
+
+		config = json;
+
+		domainForm.style.display = 'none';
+		loginForm.style.display = 'flex';
 	}
 
-	onMount(() => {
+	async function login(fields: Record<string, string | number | boolean>) {
+		loginFormSubmit.disabled = true;
+
+		const url = new URL(config.login.endpoint, parsedUrl);
+
+		const request = fetch(url, {
+			method: config.login.method?.toUpperCase() ?? 'POST'
+		});
+
+		request.catch(() => {
+			loginFormSubmit.disabled = false;
+		});
+
+		toast.promise(request, {
+			loading: 'Logging in...',
+			error: 'Login failed',
+			description: `(${url.host})`
+		});
+
+		const response = await request;
+		if (!response.ok) {
+			loginFormSubmit.disabled = false;
+			return;
+		}
+
+		let json: LoginResponse;
+		try {
+			json = await response.json();
+		} catch {
+			toast.error('Invalid response from server');
+			loginFormSubmit.disabled = false;
+			return;
+		}
+
+		if (!json.success) {
+			toast.error('Login failed');
+			loginFormSubmit.disabled = false;
+			return;
+		}
+
+		toast.success('Login successful');
+		setTimeout(() => {
+			window.location.href = '/#' + json.id;
+		}, 1000);
+	}
+
+	onMount(async () => {
 		domainFormInput = document.getElementById(`url-${id}`) as HTMLInputElement;
 		domainFormSubmit = document.getElementById(`submit-domain-${id}`) as HTMLButtonElement;
+		loginFormSubmit = document.getElementById(`submit-login-${id}`) as HTMLButtonElement;
 
 		const params = new URLSearchParams(window.location.hash.slice(1));
 		if (params.has('url')) {
 			domainFormInput.value = decodeURIComponent(params.get('url') || '');
-			domainTest(domainFormInput.value);
+			await domainTest(domainFormInput.value);
+
+			if (params.has('login')) {
+				await login({}); // TODO
+			}
 		}
 
 		domainForm.addEventListener('submit', (ev) => {
@@ -107,6 +172,13 @@
 
 			domainTest(domainFormInput.value);
 		});
+
+		loginForm.addEventListener('submit', (ev) => {
+			ev.preventDefault();
+			ev.stopPropagation();
+
+			login({}); // TODO
+		});
 	});
 </script>
 
@@ -114,7 +186,7 @@
 	<title>Login</title>
 </svelte:head>
 
-<div class="text-foreground bg-background flex h-lvh w-lvw flex-col">
+<div class="text-foreground bg-background absolute z-1000 flex h-lvh w-lvw flex-col">
 	<main class="flex grow flex-col items-center justify-center gap-6">
 		<img
 			src="https://avatars.githubusercontent.com/u/186395034?s=48&v=4"
@@ -122,7 +194,12 @@
 			class="border-input size-12 rounded-(--radius) border text-transparent"
 			bind:this={iconHeader}
 		/>
-		<h1 class="text-center text-2xl" bind:this={nameHeader}>Login</h1>
+		<hgroup>
+			<h1 class="mb-1 text-center text-2xl" bind:this={nameHeader}>Login</h1>
+			<h2 class="text-muted-foreground text-center text-sm" bind:this={hostHeader}>
+				configpanel.org
+			</h2>
+		</hgroup>
 
 		<form class="flex w-full max-w-sm flex-col space-y-2" bind:this={domainForm}>
 			<Label for="url-{id}">Domain or URL</Label>
@@ -130,6 +207,19 @@
 				<Input type="text" id="url-{id}" placeholder="demo.configpanel.org" required />
 				<Button type="submit" id="submit-domain-{id}">Check</Button>
 			</div>
+		</form>
+
+		<form class="hidden w-full max-w-sm flex-col space-y-2" bind:this={loginForm}>
+			{#if fields.length > 0}
+				<!-- TODO -->
+			{:else}
+				<Alert.Root variant="destructive">
+					<LockOpen />
+					<Alert.Title>Security Warning</Alert.Title>
+					<Alert.Description>This server did not provide any login fields.</Alert.Description>
+				</Alert.Root>
+			{/if}
+			<Button type="submit" id="submit-login-{id}">Login</Button>
 		</form>
 	</main>
 	<footer class="flex items-center justify-center gap-4 p-2 text-center text-sm">
