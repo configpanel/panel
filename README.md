@@ -1,35 +1,38 @@
-<h1 align="center">ConfigPanel</h1>
-<p align="center">Simple and extendable configuration panel for SvelteKit</p>
+# sv
 
-## Installation
+Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
 
-Set up a SvelteKit project and install the ConfigPanel package along with the TailwindCSS configuration.
+## Creating a project
+
+If you're seeing this, you've probably already done this step. Congrats!
 
 ```bash
-npm i -D @configpanel/panel @configpanel/tailwind-config
+# create a new project in the current directory
+npx sv create
+
+# create a new project in my-app
+npx sv create my-app
 ```
 
-### Tailwind setup
+## Developing
 
-ConfigPanel uses TailwindCSS for styling. To make everything work as intended, re-export the Tailwind configuration in your `tailwind.config.ts` file:
+Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
 
-```ts
-export { default } from '@configpanel/tailwind-config';
+```bash
+npm run dev
+
+# or start the server and open the app in a new browser tab
+npm run dev -- --open
 ```
 
-### Panel setup
+## Building
 
-To set up the ConfigPanel, import the `Navigation` component in your `src/routes/+layout.svelte` file:
+To create a production version of your app:
 
-```svelte
-<script lang="ts">
-	import { Navigation } from '@configpanel/panel';
-	let { children } = $props();
-</script>
-
-<Navigation nav={[]} />
-
-{@render children}
+```bash
+npm run build
 ```
 
-That's it! You can now start adding your configuration pages.
+You can preview the production build with `npm run preview`.
+
+> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
