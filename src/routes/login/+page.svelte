@@ -56,7 +56,7 @@
 		}
 
 		const apiUrl = parsedUrl.toString();
-		const request = fetch(apiUrl);
+		const request = fetch(apiUrl, { credentials: 'include' });
 		toast.promise(request, {
 			loading: 'Connecting to host...',
 			error: 'Host unreachable',
@@ -109,7 +109,8 @@
 		const url = new URL(config.login.endpoint, parsedUrl);
 
 		const request = fetch(url, {
-			method: config.login.method?.toUpperCase() ?? 'POST'
+			method: config.login.method?.toUpperCase() ?? 'POST',
+			credentials: 'include'
 		});
 
 		request.catch(() => {
