@@ -14,9 +14,15 @@ export interface LoginField {
 	id: string;
 	name?: string;
 	placeholder?: string;
+	url?: string;
 }
 
 export interface LoginResponse {
 	success: boolean;
 	id?: string;
+}
+
+export interface Context {
+	baseUrl: URL;
+	params: Record<string, string>;
 }

@@ -6,13 +6,18 @@
 	import { Label } from '$ui/label';
 	import { toast } from 'svelte-sonner';
 	import { onMount } from 'svelte';
-	import type { LoginConfig, LoginField, LoginResponse } from '$lib/types';
+	import type { Context, LoginConfig, LoginField, LoginResponse } from '$lib/types';
 	import { LockOpen } from 'lucide-svelte';
+	import LoginFieldForm from '$lib/components/LoginFieldForm.svelte';
 
 	const id = $props.id();
 
-	let fields: LoginField[] = [];
+	let fields: LoginField[] = $state([]);
 
+	let context: Context = {
+		baseUrl: new URL('https://configpanel.org/'),
+		params: {}
+	};
 	let config: LoginConfig;
 	let parsedUrl: URL;
 
@@ -47,6 +52,7 @@
 
 		try {
 			parsedUrl = fullUrl(url);
+			context.baseUrl = parsedUrl;
 		} catch {
 			toast.error('Invalid URL or domain');
 
@@ -56,7 +62,7 @@
 		}
 
 		const apiUrl = parsedUrl.toString();
-		const request = fetch(apiUrl, { credentials: 'include' });
+		const request = fetch(apiUrl);
 		toast.promise(request, {
 			loading: 'Connecting to host...',
 			error: 'Host unreachable',
@@ -98,6 +104,7 @@
 		if (json.icon) iconHeader.src = new URL(json.icon, parsedUrl).toString();
 
 		config = json;
+		fields = json.login.fields;
 
 		domainForm.style.display = 'none';
 		loginForm.style.display = 'flex';
@@ -108,9 +115,20 @@
 
 		const url = new URL(config.login.endpoint, parsedUrl);
 
+		const method = config.login.method?.toUpperCase() ?? 'POST';
+		if (method === 'GET')
+			Object.keys(fields).forEach((key) => {
+				url.searchParams.set(key, fields[key].toString());
+			});
+		const body = method === 'GET' ? null : JSON.stringify(fields);
+
 		const request = fetch(url, {
-			method: config.login.method?.toUpperCase() ?? 'POST',
-			credentials: 'include'
+			method,
+			body,
+			headers: {
+				...(method === 'GET' ? {} : { 'Content-Type': 'application/json' }),
+				Accept: 'application/json'
+			}
 		});
 
 		request.catch(() => {
@@ -146,8 +164,12 @@
 
 		toast.success('Login successful');
 		setTimeout(() => {
-			window.location.href = '/#' + json.id;
+			window.location.href = `/#${parsedUrl.hostname}-${json.id}`;
 		}, 1000);
+	}
+
+	function loginLock(lock: boolean) {
+		loginFormSubmit.disabled = lock;
 	}
 
 	onMount(async () => {
@@ -156,12 +178,14 @@
 		loginFormSubmit = document.getElementById(`submit-login-${id}`) as HTMLButtonElement;
 
 		const params = new URLSearchParams(window.location.hash.slice(1));
+		context.params = Object.fromEntries(params.entries());
+		delete context.params.url;
 		if (params.has('url')) {
 			domainFormInput.value = decodeURIComponent(params.get('url') || '');
 			await domainTest(domainFormInput.value);
 
 			if (params.has('login')) {
-				await login({}); // TODO
+				await login(context.params);
 			}
 		}
 
@@ -178,7 +202,13 @@
 			ev.preventDefault();
 			ev.stopPropagation();
 
-			login({}); // TODO
+			login({
+				...context.params,
+				...(Object.fromEntries(new FormData(loginForm).entries()) as Record<
+					string,
+					string | number | boolean
+				>)
+			});
 		});
 	});
 </script>
@@ -212,7 +242,9 @@
 
 		<form class="hidden w-full max-w-sm flex-col space-y-2" bind:this={loginForm}>
 			{#if fields.length > 0}
-				<!-- TODO -->
+				{#each fields as field}
+					<LoginFieldForm {field} {loginLock} {context} />
+				{/each}
 			{:else}
 				<Alert.Root variant="destructive">
 					<LockOpen />
