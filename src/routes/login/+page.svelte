@@ -31,7 +31,7 @@
 		}
 
 		if (!url.startsWith('http://') && !url.startsWith('https://')) {
-			url = 'https://' + url;
+			url = (url.startsWith('localhost:') ? 'http://' : 'https://') + url;
 		}
 
 		if (!url.endsWith('/')) {
@@ -196,7 +196,9 @@
 		/>
 		<hgroup>
 			<h1 class="mb-1 text-center text-2xl" bind:this={nameHeader}>Login</h1>
-			<h2 class="text-muted-foreground text-center text-sm" bind:this={hostHeader}>(not connected)</h2>
+			<h2 class="text-muted-foreground text-center text-sm" bind:this={hostHeader}>
+				(not connected)
+			</h2>
 		</hgroup>
 
 		<form class="flex w-full max-w-sm flex-col space-y-2" bind:this={domainForm}>
