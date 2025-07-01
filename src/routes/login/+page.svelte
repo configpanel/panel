@@ -7,8 +7,10 @@
 	import { toast } from 'svelte-sonner';
 	import { onMount } from 'svelte';
 	import type { Context, LoginConfig, LoginField, LoginResponse } from '$lib/types';
-	import { LockOpen } from 'lucide-svelte';
+	import { ArrowLeft, LockOpen } from 'lucide-svelte';
 	import LoginFieldForm from '$lib/components/LoginFieldForm.svelte';
+	import Service from '$lib/components/Service.svelte';
+	import Footer from '$lib/components/Footer.svelte';
 
 	const id = $props.id();
 
@@ -62,7 +64,7 @@
 		}
 
 		const apiUrl = parsedUrl.toString();
-		const request = fetch(apiUrl, { credentials: 'include' });
+		const request = fetch(apiUrl);
 		toast.promise(request, {
 			loading: 'Connecting to host...',
 			error: 'Host unreachable',
@@ -99,7 +101,9 @@
 			return;
 		}
 
-		nameHeader.textContent = document.title = 'Log in to ' + (json.name || parsedUrl.hostname);
+		let title = 'Log in to ' + (json.name || parsedUrl.hostname);
+		nameHeader.textContent = title;
+		document.title = title + ' | ConfigPanel';
 		hostHeader.textContent = parsedUrl.host;
 		if (json.icon) iconHeader.src = new URL(json.icon, parsedUrl).toString();
 
@@ -129,7 +133,7 @@
 				...(method === 'GET' ? {} : { 'Content-Type': 'application/json' }),
 				Accept: 'application/json'
 			},
-			credentials: 'include'
+			credentials: config.credentials === false ? 'omit' : 'include'
 		});
 
 		request.catch(() => {
@@ -164,8 +168,28 @@
 		}
 
 		toast.success('Login successful');
+		localStorage.setItem(
+			'configpanel.org-services',
+			JSON.stringify(
+				[
+					...(
+						JSON.parse(localStorage.getItem('configpanel.org-services') || '[]') as Service[]
+					).filter((service) => service.id !== (json.id ?? parsedUrl.hostname)),
+					{
+						id: json.id ?? parsedUrl.hostname,
+						name: config.name || parsedUrl.hostname,
+						host: parsedUrl.host,
+						icon: config.icon,
+						noCredentials: config.credentials === false ? true : undefined,
+						expires: json.expires ?? -1,
+						endpoint: json.endpoint ?? parsedUrl.toString(),
+						user: json.user ?? json.id ?? parsedUrl.hostname
+					}
+				].sort((a, b) => a.name.localeCompare(b.name))
+			)
+		);
 		setTimeout(() => {
-			window.location.href = `/#${parsedUrl.hostname}-${json.id}`;
+			window.location.href = `/#${encodeURIComponent(parsedUrl.host)}-${encodeURIComponent(json.id ?? parsedUrl.hostname)}`;
 		}, 1000);
 	}
 
@@ -215,10 +239,16 @@
 </script>
 
 <svelte:head>
-	<title>Login</title>
+	<title>Log in | ConfigPanel</title>
 </svelte:head>
 
-<div class="text-foreground bg-background absolute z-1000 flex h-lvh w-lvw flex-col">
+<div class="text-foreground bg-background absolute z-1000 flex h-lvh w-lvw flex-col px-2">
+	<div class="mt-4">
+		<a href="/" class="text-muted-foreground flex items-center justify-center gap-1 text-sm">
+			<ArrowLeft class="size-4" />
+			<p class="-translate-y-0.25 underline">return to home</p>
+		</a>
+	</div>
 	<main class="flex grow flex-col items-center justify-center gap-6">
 		<img
 			src="https://avatars.githubusercontent.com/u/186395034?s=48&v=4"
@@ -256,18 +286,5 @@
 			<Button type="submit" id="submit-login-{id}">Login</Button>
 		</form>
 	</main>
-	<footer class="flex items-center justify-center gap-4 p-2 text-center text-sm">
-		<p>ConfigPanel</p>
-		<p>
-			<a href="https://github.com/configpanel/panel" target="blank" class="underline">
-				source code
-			</a>
-		</p>
-		<p>
-			<a href="https://docs.configpanel.org/" target="blank" class="underline">documentation</a>
-		</p>
-		<p>
-			<a href="https://ko-fi.com/Le0_X8" target="blank" class="underline">donate &lt;3</a>
-		</p>
-	</footer>
+	<Footer />
 </div>
