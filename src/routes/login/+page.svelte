@@ -242,7 +242,7 @@
 	<title>Log in | ConfigPanel</title>
 </svelte:head>
 
-<div class="text-foreground bg-background absolute z-1000 flex h-lvh w-lvw flex-col px-2">
+<div class="text-foreground bg-background absolute z-49 flex h-lvh w-lvw flex-col px-2">
 	<div class="mt-4">
 		<a href="/" class="text-muted-foreground flex items-center justify-center gap-1 text-sm">
 			<ArrowLeft class="size-4" />

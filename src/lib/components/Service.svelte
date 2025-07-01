@@ -23,7 +23,7 @@
 		class="flex grow flex-col justify-center overflow-hidden px-2 text-ellipsis whitespace-nowrap"
 	>
 		{#if add}
-			<p class="overflow-hidden text-sm font-semibold text-ellipsis">Add a new panel</p>
+			<p class="overflow-hidden text-sm font-semibold text-ellipsis">Add a new service</p>
 		{:else}
 			<p class="overflow-hidden text-sm font-semibold text-ellipsis">{service?.name}</p>
 			<p class="text-muted-foreground overflow-hidden text-xs text-ellipsis">

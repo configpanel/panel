@@ -16,7 +16,7 @@
 	<title>Welcome | ConfigPanel</title>
 </svelte:head>
 
-<div class="text-foreground bg-background absolute z-1000 flex h-lvh w-lvw flex-col px-2">
+<div class="text-foreground bg-background absolute z-49 flex h-lvh w-lvw flex-col px-2">
 	<main class="flex grow flex-col items-center justify-center gap-6">
 		<MonitorCog class="size-12" />
 
@@ -24,7 +24,7 @@
 
 		{#if services.length === 0}
 			<p class="text-center text-sm">
-				It looks like you aren't logged into a panel yet.
+				It looks like you aren't logged into a service yet.
 				<br />
 				You can add your first server connection by clicking the button below.
 			</p>
