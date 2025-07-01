@@ -62,7 +62,7 @@
 		}
 
 		const apiUrl = parsedUrl.toString();
-		const request = fetch(apiUrl);
+		const request = fetch(apiUrl, { credentials: 'include' });
 		toast.promise(request, {
 			loading: 'Connecting to host...',
 			error: 'Host unreachable',
@@ -128,7 +128,8 @@
 			headers: {
 				...(method === 'GET' ? {} : { 'Content-Type': 'application/json' }),
 				Accept: 'application/json'
-			}
+			},
+			credentials: 'include'
 		});
 
 		request.catch(() => {
