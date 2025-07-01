@@ -10,7 +10,7 @@
 	class="mb-0 flex h-14 w-full items-center p-2 {add ? '' : 'border-b'}"
 	href={add ? '/login' : ''}
 >
-	<div class="border-muted flex size-10 items-center justify-center rounded-md border">
+	<div class="flex size-10 items-center justify-center rounded-md border">
 		{#if add}
 			<Plus />
 		{:else if service?.icon}

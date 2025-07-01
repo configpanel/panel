@@ -30,9 +30,7 @@
 			</p>
 		{/if}
 
-		<div
-			class="border-muted flex max-h-70 w-full max-w-sm flex-col space-y-2 overflow-x-auto rounded-lg border"
-		>
+		<div class="flex max-h-78 w-full max-w-sm flex-col space-y-2 overflow-x-auto rounded-lg border">
 			{#each services as service}
 				<Service {service} />
 			{/each}
