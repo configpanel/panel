@@ -1,14 +1,24 @@
 <script lang="ts">
-	import Footer from '$lib/components/Footer.svelte';
-	import Service from '$lib/components/Service.svelte';
+	import Footer from '$c/Footer.svelte';
+	import Service from '$c/Service.svelte';
 	import type { Service as ServiceType } from '$lib/types';
 	import { MonitorCog } from 'lucide-svelte';
 	import { onMount } from 'svelte';
+	import { page } from '$app/state';
+	import AppSidebar from '$c/app-sidebar.svelte';
+	import * as Breadcrumb from '$ui/breadcrumb';
+	import { Separator } from '$ui/separator';
+	import * as Sidebar from '$ui/sidebar';
 
 	let services: ServiceType[] = $state([]);
+	let serviceId: string = $derived(page.url.hash.slice(1).split('/')[0]);
+	let serviceSelected = $derived(serviceId.length > 0);
+	let path: string = $derived(page.url.hash.split('/').slice(1).join('/'));
+	let mounted = $state(false);
 
 	onMount(() => {
 		services = JSON.parse(localStorage.getItem('configpanel.org-services') ?? '[]');
+		mounted = true;
 	});
 </script>
 
@@ -16,26 +26,56 @@
 	<title>Welcome | ConfigPanel</title>
 </svelte:head>
 
-<div class="text-foreground bg-background absolute z-49 flex h-lvh w-lvw flex-col px-2">
-	<main class="flex grow flex-col items-center justify-center gap-6">
-		<MonitorCog class="size-12" />
+{#if !serviceSelected && mounted}
+	<div class="text-foreground bg-background absolute z-49 flex h-lvh w-lvw flex-col px-2">
+		<main class="flex grow flex-col items-center justify-center gap-6">
+			<MonitorCog class="size-12" />
 
-		<h1 class="mb-1 text-center text-2xl">Welcome!</h1>
+			<h1 class="mb-1 text-center text-2xl">Welcome!</h1>
 
-		{#if services.length === 0}
-			<p class="text-center text-sm">
-				It looks like you aren't logged into a service yet.
-				<br />
-				You can add your first server connection by clicking the button below.
-			</p>
-		{/if}
+			{#if services.length === 0}
+				<p class="text-center text-sm">
+					It looks like you aren't logged into a service yet.
+					<br />
+					You can add your first server connection by clicking the button below.
+				</p>
+			{/if}
 
-		<div class="flex max-h-78 w-full max-w-sm flex-col space-y-2 overflow-x-auto rounded-lg border">
-			{#each services as service}
-				<Service {service} />
-			{/each}
-			<Service />
-		</div>
-	</main>
-	<Footer />
-</div>
+			<div
+				class="flex max-h-78 w-full max-w-sm flex-col space-y-2 overflow-x-auto rounded-lg border"
+			>
+				{#each services as service}
+					<Service {service} />
+				{/each}
+				<Service />
+			</div>
+		</main>
+		<Footer />
+	</div>
+{/if}
+{#if serviceSelected && mounted}
+	<Sidebar.Provider>
+		<AppSidebar {services} selected={serviceId} />
+		<Sidebar.Inset>
+			<header
+				class="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12"
+			>
+				<div class="flex items-center gap-2 px-4">
+					<Sidebar.Trigger class="-ml-1" />
+					<Separator orientation="vertical" class="mr-2 data-[orientation=vertical]:h-4" />
+					<Breadcrumb.Root>
+						<Breadcrumb.List>
+							<Breadcrumb.Item class="hidden md:block">
+								<Breadcrumb.Link href="#">Building Your Application</Breadcrumb.Link>
+							</Breadcrumb.Item>
+							<Breadcrumb.Separator class="hidden md:block" />
+							<Breadcrumb.Item>
+								<Breadcrumb.Page>Data Fetching</Breadcrumb.Page>
+							</Breadcrumb.Item>
+						</Breadcrumb.List>
+					</Breadcrumb.Root>
+				</div>
+			</header>
+		</Sidebar.Inset>
+	</Sidebar.Provider>
+{/if}

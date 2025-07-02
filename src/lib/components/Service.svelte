@@ -4,11 +4,12 @@
 
 	export let service: Service | undefined = undefined;
 	let add = service === undefined;
+	let fullId = `${encodeURIComponent(service?.host as string)}-${encodeURIComponent(service?.id as string)}`;
 </script>
 
 <a
-	class="mb-0 flex h-14 w-full items-center p-2 {add ? '' : 'border-b'}"
-	href={add ? '/login' : ''}
+	class="mb-0 flex h-14 w-full items-center p-2 {add ? 'border-b-0' : 'border-b'}"
+	href={add ? '/login' : `/#${fullId}`}
 >
 	<div class="flex size-10 items-center justify-center rounded-md border">
 		{#if add}
