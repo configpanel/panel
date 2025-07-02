@@ -182,7 +182,7 @@
 						icon: config.icon,
 						noCredentials: config.credentials === false ? true : undefined,
 						expires: json.expires ?? -1,
-						endpoint: json.endpoint ?? parsedUrl.toString(),
+						endpoint: new URL(json.endpoint ?? '', parsedUrl).toString(),
 						user: json.user ?? json.id ?? parsedUrl.hostname
 					}
 				].sort((a, b) => a.name.localeCompare(b.name))

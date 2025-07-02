@@ -7,8 +7,6 @@
 	import PlusIcon from '@lucide/svelte/icons/plus';
 	import { MonitorCog } from 'lucide-svelte';
 
-	// This should be `Component` after @lucide/svelte updates types
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	let { services, selected }: { services: Service[]; selected: string } = $props();
 	const sidebar = useSidebar();
 	let activeServiceHost = $derived(decodeURIComponent(selected.split('-')[0]));
@@ -33,7 +31,7 @@
 							class="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg"
 						>
 							{#if activeService?.icon}
-								<img src={activeService.icon} alt="" class="size-4 rounded-md" />
+								<img src={activeService.icon} alt="" class="size-8 rounded-md" />
 							{:else}
 								<MonitorCog class="size-4 shrink-0" />
 							{/if}
@@ -42,7 +40,7 @@
 							<span class="truncate font-medium">
 								{activeService.name}
 							</span>
-							<span class="truncate text-xs">{activeService.host}</span>
+							<span class="text-muted-foreground truncate text-xs">{activeService.host}</span>
 						</div>
 						<ChevronsUpDownIcon class="ml-auto" />
 					</Sidebar.MenuButton>
@@ -56,20 +54,26 @@
 			>
 				<DropdownMenu.Label class="text-muted-foreground text-xs">Services</DropdownMenu.Label>
 				{#each services as service, index}
-					<DropdownMenu.Item onSelect={() => (activeService = service)} class="gap-2 p-2">
+					<DropdownMenu.Item
+						onSelect={() =>
+							(window.location.href = `#${encodeURIComponent(service?.host as string)}-${encodeURIComponent(service?.id as string)}`)}
+						class="gap-2 p-2"
+					>
 						<div class="flex size-6 items-center justify-center rounded-md border">
 							{#if service?.icon}
-								<img src={activeService.icon} alt="" class="size-3.5 shrink-0 rounded-md" />
+								<img src={activeService.icon} alt="" class="size-6 shrink-0 rounded-md" />
 							{:else}
 								<MonitorCog class="size-3.5 shrink-0" />
 							{/if}
 						</div>
-						{service.name}
-						<DropdownMenu.Shortcut>⌘{index + 1}</DropdownMenu.Shortcut>
+						<div class="flex flex-col leading-tight">
+							<span class="">{service.name}</span>
+							<span class="text-muted-foreground text-xs">{service.host}</span>
+						</div>
 					</DropdownMenu.Item>
 				{/each}
 				<DropdownMenu.Separator />
-				<DropdownMenu.Item class="gap-2 p-2">
+				<DropdownMenu.Item class="gap-2 p-2" onclick={() => (window.location.href = '/login')}>
 					<div class="flex size-6 items-center justify-center rounded-md border bg-transparent">
 						<PlusIcon class="size-4" />
 					</div>

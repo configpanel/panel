@@ -1,11 +1,11 @@
 <script lang="ts">
 	import Footer from '$c/Footer.svelte';
 	import Service from '$c/Service.svelte';
-	import type { Service as ServiceType } from '$lib/types';
+	import type { Panel, Service as ServiceType } from '$lib/types';
 	import { MonitorCog } from 'lucide-svelte';
 	import { onMount } from 'svelte';
 	import { page } from '$app/state';
-	import AppSidebar from '$c/app-sidebar.svelte';
+	import AppSidebar from '$lib/components/AppSidebar.svelte';
 	import * as Breadcrumb from '$ui/breadcrumb';
 	import { Separator } from '$ui/separator';
 	import * as Sidebar from '$ui/sidebar';
@@ -15,6 +15,19 @@
 	let serviceSelected = $derived(serviceId.length > 0);
 	let path: string = $derived(page.url.hash.split('/').slice(1).join('/'));
 	let mounted = $state(false);
+	let activeServiceHost = $derived(decodeURIComponent(serviceId.split('-')[0]));
+	let activeServiceId = $derived(decodeURIComponent(serviceId.split('-')[1]));
+	let activeService: ServiceType | undefined = $derived(
+		services.find((s) => s.id === activeServiceId && s.host === activeServiceHost) as ServiceType
+	);
+	let panel: Panel | undefined = $state(undefined);
+
+	$effect((async () => {
+		if (!mounted || !activeService) return;
+
+		const response = await fetch(activeService.endpoint);
+		panel = (await response.json()) as Panel;
+	}) as () => void);
 
 	onMount(() => {
 		services = JSON.parse(localStorage.getItem('configpanel.org-services') ?? '[]');
@@ -53,12 +66,12 @@
 		<Footer />
 	</div>
 {/if}
-{#if serviceSelected && mounted}
+{#if serviceSelected && mounted && panel}
 	<Sidebar.Provider>
-		<AppSidebar {services} selected={serviceId} />
+		<AppSidebar {services} selected={serviceId} {panel} />
 		<Sidebar.Inset>
 			<header
-				class="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12"
+				class="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear select-none group-has-data-[collapsible=icon]/sidebar-wrapper:h-12"
 			>
 				<div class="flex items-center gap-2 px-4">
 					<Sidebar.Trigger class="-ml-1" />

@@ -127,27 +127,29 @@
 <script lang="ts">
 	import NavMain from './nav-main.svelte';
 	import NavProjects from './nav-projects.svelte';
-	import NavUser from './nav-user.svelte';
+	import NavUser from './NavUser.svelte';
 	import ServiceSwitcher from './ServiceSwitcher.svelte';
 	import * as Sidebar from '$ui/sidebar/index.js';
 	import type { ComponentProps } from 'svelte';
-	import type { Service } from '$lib/types';
+	import type { Panel, Service } from '$lib/types';
 
 	interface Props extends ComponentProps<typeof Sidebar.Root> {
 		services?: Service[];
 		selected: string;
+		panel: Panel;
 	}
 
 	let {
 		services = [],
 		selected,
+		panel,
 		ref = $bindable(null),
 		collapsible = 'icon',
 		...restProps
 	}: Props = $props();
 </script>
 
-<Sidebar.Root {collapsible} {...restProps}>
+<Sidebar.Root {collapsible} {...restProps} class="select-none">
 	<Sidebar.Header>
 		<ServiceSwitcher {services} {selected} />
 	</Sidebar.Header>
@@ -156,7 +158,7 @@
 		<NavProjects projects={data.projects} />
 	</Sidebar.Content>
 	<Sidebar.Footer>
-		<NavUser user={data.user} />
+		<NavUser user={panel.user} />
 	</Sidebar.Footer>
 	<Sidebar.Rail />
 </Sidebar.Root>

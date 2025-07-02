@@ -41,3 +41,13 @@ export interface Service {
 	endpoint: string;
 	user: string;
 }
+
+export interface Panel {
+	user: User;
+}
+
+export interface User {
+	displayName?: string;
+	name: string;
+	avatar?: string;
+}
