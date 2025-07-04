@@ -25,7 +25,9 @@
 	$effect((async () => {
 		if (!mounted || !activeService) return;
 
-		const response = await fetch(activeService.endpoint);
+		const response = await fetch(activeService.endpoint, {
+			credentials: activeService.noCredentials === true ? 'omit' : 'include'
+		});
 		panel = (await response.json()) as Panel;
 	}) as () => void);
 
