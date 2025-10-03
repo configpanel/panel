@@ -1,7 +1,7 @@
 <script lang="ts">
 	import Footer from '$c/Footer.svelte';
 	import Service from '$c/Service.svelte';
-	import type { Panel, Service as ServiceType } from '$lib/types';
+	import type { NavLink, Panel, Service as ServiceType } from '$lib/types';
 	import { MonitorCog } from 'lucide-svelte';
 	import { onMount } from 'svelte';
 	import { page } from '$app/state';
@@ -9,6 +9,7 @@
 	import * as Breadcrumb from '$ui/breadcrumb';
 	import { Separator } from '$ui/separator';
 	import * as Sidebar from '$ui/sidebar';
+	import { pushState } from '$app/navigation';
 
 	let services: ServiceType[] = $state([]);
 	let serviceId: string = $derived(page.url.hash.slice(1).split('/')[0]);
@@ -22,6 +23,28 @@
 	);
 	let panel: Panel | undefined = $state(undefined);
 
+	function flatLink(link: NavLink, group?: string, parent?: NavLink): NavLink[] {
+		const outLinks: NavLink[] = [];
+		if (link.url) {
+			const newLink = { ...link };
+			if (group) newLink._group = group;
+			if (parent) newLink._parent = parent;
+			outLinks.push(newLink);
+		}
+		if (link.children) {
+			for (const child of link.children) {
+				outLinks.push(
+					...flatLink(
+						child,
+						group ?? (link.url ? undefined : link.title),
+						link.url ? { ...link } : undefined
+					)
+				);
+			}
+		}
+		return outLinks;
+	}
+
 	$effect((async () => {
 		if (!mounted || !activeService) return;
 
@@ -29,16 +52,59 @@
 			credentials: activeService.noCredentials === true ? 'omit' : 'include'
 		});
 		panel = (await response.json()) as Panel;
+		if (typeof panel !== 'object') {
+			panel = undefined;
+			alert('You have been logged out of this service. Please delete it and log in again.');
+			window.location.href = '/';
+			return;
+		}
+
+		panel._urls = [];
+		panel._urls.push({ ...panel.home });
+		panel.nav.forEach((item) => {
+			panel?._urls.push(...flatLink(item as NavLink));
+		});
+
+		navigate(path);
 	}) as () => void);
 
 	onMount(() => {
 		services = JSON.parse(localStorage.getItem('configpanel.org-services') ?? '[]');
+		navigate(path);
 		mounted = true;
 	});
+
+	function navigateTo(id: string) {
+		if (path === id) return;
+		pushState(`#${serviceId}${id === '' ? '' : '/' + id}`, {});
+		path = id;
+		navigate(id);
+	}
+
+	let current: NavLink = $state({ id: '', title: '', url: '' });
+
+	function navigate(id: string) {
+		if (!panel) return;
+
+		let url: NavLink;
+		if (id === '') {
+			url = panel.home;
+		} else {
+			const link = panel._urls.find((u) => u.id === id);
+			if (!link) return;
+
+			url = link;
+		}
+
+		current = url;
+	}
 </script>
 
 <svelte:head>
-	<title>Welcome | ConfigPanel</title>
+	<title>
+		{serviceSelected && mounted && panel ? activeService.name : 'Welcome'}
+		| ConfigPanel
+	</title>
 </svelte:head>
 
 {#if !serviceSelected && mounted}
@@ -70,7 +136,7 @@
 {/if}
 {#if serviceSelected && mounted && panel}
 	<Sidebar.Provider>
-		<AppSidebar {services} selected={serviceId} {panel} />
+		<AppSidebar {services} selected={serviceId} {panel} active={path} {navigateTo} />
 		<Sidebar.Inset>
 			<header
 				class="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear select-none group-has-data-[collapsible=icon]/sidebar-wrapper:h-12"
@@ -80,12 +146,29 @@
 					<Separator orientation="vertical" class="mr-2 data-[orientation=vertical]:h-4" />
 					<Breadcrumb.Root>
 						<Breadcrumb.List>
-							<Breadcrumb.Item class="hidden md:block">
-								<Breadcrumb.Link href="#">Building Your Application</Breadcrumb.Link>
-							</Breadcrumb.Item>
-							<Breadcrumb.Separator class="hidden md:block" />
+							{#if current._group}
+								<Breadcrumb.Item class="hidden md:block">
+									<Breadcrumb.Link class="pointer-events-none">
+										{current._group}
+									</Breadcrumb.Link>
+								</Breadcrumb.Item>
+								<Breadcrumb.Separator class="hidden md:block" />
+							{/if}
+
+							{#if current._parent}
+								<Breadcrumb.Item class="hidden md:block">
+									<Breadcrumb.Link
+										onclick={() => navigateTo(current._parent?.id ?? '')}
+										class="cursor-pointer"
+									>
+										{current._parent.title}
+									</Breadcrumb.Link>
+								</Breadcrumb.Item>
+								<Breadcrumb.Separator class="hidden md:block" />
+							{/if}
+
 							<Breadcrumb.Item>
-								<Breadcrumb.Page>Data Fetching</Breadcrumb.Page>
+								<Breadcrumb.Page>{current.title}</Breadcrumb.Page>
 							</Breadcrumb.Item>
 						</Breadcrumb.List>
 					</Breadcrumb.Root>

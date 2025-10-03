@@ -44,10 +44,32 @@ export interface Service {
 
 export interface Panel {
 	user: User;
+	home: NavLink;
+	nav: (NavGroup | NavLink)[];
+
+	// internal use only
+	_urls: NavLink[];
 }
 
 export interface User {
 	displayName?: string;
 	name: string;
 	avatar?: string;
+}
+
+export interface NavLink {
+	title: string;
+	url: string;
+	id: string;
+	icon?: string;
+	children?: NavLink[];
+
+	// internal use only
+	_parent?: NavLink;
+	_group?: string;
+}
+
+export interface NavGroup {
+	title: string;
+	children: NavLink[];
 }

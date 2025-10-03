@@ -29,7 +29,7 @@
 						</Avatar.Root>
 						<div class="grid flex-1 text-left text-sm leading-tight">
 							<span class="truncate font-medium">{user.displayName ?? user.name}</span>
-							<span class="truncate text-xs">{user.name}</span>
+							<span class="text-muted-foreground truncate text-xs">{user.name}</span>
 						</div>
 						<ChevronsUpDownIcon class="ml-auto size-4" />
 					</Sidebar.MenuButton>
@@ -51,7 +51,7 @@
 						</Avatar.Root>
 						<div class="grid flex-1 text-left text-sm leading-tight">
 							<span class="truncate font-medium">{user.displayName ?? user.name}</span>
-							<span class="truncate text-xs">{user.name}</span>
+							<span class="text-muted-foreground truncate text-xs">{user.name}</span>
 						</div>
 					</div>
 				</DropdownMenu.Label>
