@@ -5,7 +5,7 @@
 	let { content }: { content: Content } = $props();
 </script>
 
-<h1 class="text-4xl font-extrabold">
+<h1 class="mb-2 text-4xl font-extrabold">
 	{content.title}
 </h1>
 
