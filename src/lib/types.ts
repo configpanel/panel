@@ -76,4 +76,16 @@ export interface NavGroup {
 
 export interface Content {
 	title: string;
+	content: ContentItem[];
+}
+
+export type ContentItem = TextItem;
+
+export interface ContentBase {
+	type: string;
+}
+
+export interface TextItem extends ContentBase {
+	type: 'text';
+	text: string;
 }
