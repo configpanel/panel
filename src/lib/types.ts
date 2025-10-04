@@ -73,3 +73,7 @@ export interface NavGroup {
 	title: string;
 	children: NavLink[];
 }
+
+export interface Content {
+	title: string;
+}

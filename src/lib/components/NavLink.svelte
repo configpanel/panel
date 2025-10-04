@@ -22,7 +22,7 @@
 {#snippet button()}
 	<Sidebar.MenuButton
 		tooltipContent={title}
-		class="w-full cursor-pointer {active === id ? 'italic' : ''}"
+		class="w-full cursor-pointer {active === id ? 'bg-sidebar-border hover:bg-sidebar-border' : ''}"
 		onclick={() => navigateTo(id)}
 	>
 		{#if icon}

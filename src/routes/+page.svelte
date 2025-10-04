@@ -1,15 +1,18 @@
 <script lang="ts">
 	import Footer from '$c/Footer.svelte';
 	import Service from '$c/Service.svelte';
-	import type { NavLink, Panel, Service as ServiceType } from '$lib/types';
-	import { MonitorCog } from 'lucide-svelte';
+	import type { Content, NavLink, Panel, Service as ServiceType } from '$lib/types';
+	import { AlertCircle, MonitorCog } from 'lucide-svelte';
 	import { onMount } from 'svelte';
 	import { page } from '$app/state';
 	import AppSidebar from '$lib/components/AppSidebar.svelte';
 	import * as Breadcrumb from '$ui/breadcrumb';
 	import { Separator } from '$ui/separator';
 	import * as Sidebar from '$ui/sidebar';
+	import * as Alert from '$ui/alert';
 	import { pushState } from '$app/navigation';
+	import PanelContent from '$lib/components/PanelContent.svelte';
+	import Loading from '$lib/components/Loading.svelte';
 
 	let services: ServiceType[] = $state([]);
 	let serviceId: string = $derived(page.url.hash.slice(1).split('/')[0]);
@@ -22,6 +25,8 @@
 		services.find((s) => s.id === activeServiceId && s.host === activeServiceHost) as ServiceType
 	);
 	let panel: Panel | undefined = $state(undefined);
+	let content: Content | undefined = $state(undefined);
+	let contentError: string | undefined = $state(undefined);
 
 	function flatLink(link: NavLink, group?: string, parent?: NavLink): NavLink[] {
 		const outLinks: NavLink[] = [];
@@ -51,9 +56,13 @@
 		const response = await fetch(activeService.endpoint, {
 			credentials: activeService.noCredentials === true ? 'omit' : 'include'
 		});
-		panel = (await response.json()) as Panel;
-		if (typeof panel !== 'object') {
-			panel = undefined;
+		try {
+			panel = (await response.json()) as Panel;
+			if (typeof panel !== 'object') {
+				panel = undefined;
+				throw new Error('');
+			}
+		} catch {
 			alert('You have been logged out of this service. Please delete it and log in again.');
 			window.location.href = '/';
 			return;
@@ -83,8 +92,10 @@
 
 	let current: NavLink = $state({ id: '', title: '', url: '' });
 
-	function navigate(id: string) {
+	async function navigate(id: string) {
 		if (!panel) return;
+		content = undefined;
+		contentError = undefined;
 
 		let url: NavLink;
 		if (id === '') {
@@ -97,6 +108,20 @@
 		}
 
 		current = url;
+
+		const response = await fetch(new URL(url.url, activeService?.endpoint), {
+			credentials: activeService?.noCredentials === true ? 'omit' : 'include'
+		});
+		try {
+			content = (await response.json()) as Content;
+			if (typeof content !== 'object') {
+				content = undefined;
+				throw new Error('The server returned an invalid response.');
+			}
+		} catch (e) {
+			contentError = (e as Error).message;
+			return;
+		}
 	}
 </script>
 
@@ -174,6 +199,23 @@
 					</Breadcrumb.Root>
 				</div>
 			</header>
+			<main
+				class="flex min-h-[calc(100vh-4rem)] flex-col gap-2 px-4 transition-[width,height] ease-linear"
+			>
+				{#if content}
+					<PanelContent {content} />
+				{:else if contentError}
+					<Alert.Root variant="destructive">
+						<AlertCircle />
+						<Alert.Title>Error while loading the page:</Alert.Title>
+						<Alert.Description>{contentError}</Alert.Description>
+					</Alert.Root>
+				{:else}
+					<div class="flex w-full grow items-center justify-center">
+						<Loading />
+					</div>
+				{/if}
+			</main>
 		</Sidebar.Inset>
 	</Sidebar.Provider>
 {/if}
