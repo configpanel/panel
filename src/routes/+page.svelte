@@ -200,10 +200,10 @@
 				</div>
 			</header>
 			<main
-				class="flex min-h-[calc(100vh-4rem)] flex-col gap-2 px-4 transition-[width,height] ease-linear"
+				class="flex min-h-[calc(100vh-4rem)] flex-col gap-2 px-8 transition-[width,height] ease-linear"
 			>
 				{#if content}
-					<PanelContent {content} />
+					<PanelContent {content} {navigateTo} />
 				{:else if contentError}
 					<Alert.Root variant="destructive">
 						<AlertCircle />

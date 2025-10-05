@@ -2,9 +2,9 @@
 	import ComponentText from '$lib/components/ComponentText.svelte';
 	import type { ContentItem } from '$lib/types';
 
-	let { item }: { item: ContentItem } = $props();
+	let { item, navigateTo }: { item: ContentItem; navigateTo: (url: string) => void } = $props();
 </script>
 
 {#if item.type === 'text'}
-	<ComponentText {item} />
+	<ComponentText {item} {navigateTo} />
 {/if}
